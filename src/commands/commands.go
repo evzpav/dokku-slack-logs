@@ -15,7 +15,9 @@ import (
 )
 
 const (
-	helpHeader = `Usage: dokku slack-logs[:COMMAND]
+	//SlackBotToken ...
+	SlackBotToken = "SLACK_BOT_TOKEN"
+	helpHeader    = `Usage: dokku slack-logs[:COMMAND]
 
 Read Dokku apps logs from Slack bot
 
@@ -64,9 +66,9 @@ func usage() {
 func readLog() {
 	log.Println("Read log running!")
 
-	slackBotToken := os.Getenv("SLACK_BOT_TOKEN")
+	slackBotToken := os.Getenv(SlackBotToken)
 	if slackBotToken == "" {
-		log.Println("Variable SLACK_BOT_TOKEN not defined")
+		log.Println("Variable " + SlackBotToken + " not defined")
 		return
 	}
 
@@ -136,5 +138,11 @@ func readFile(fileName string) (chan *tail.Line, error) {
 }
 
 func setSlackToken(token string) {
-	os.Setenv("SLACK_BOT_TOKEN", token)
+	err := os.Setenv(SlackBotToken, token)
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println("Env var set:\n" + SlackBotToken + "=" + token)
+	}
+
 }

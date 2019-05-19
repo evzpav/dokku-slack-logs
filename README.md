@@ -32,6 +32,10 @@ dokku plugin:install https://github.com/evzpav/dokku-slack-logs.git
     dokku slack-logs:token <SLACK_BOT_TOKEN>
 # enable the bot:
     dokku slack-logs:enable
+
+# on Slack app:
+    logs dokku-app-name
+# it will print log on Slack bot
 ```
 
 
