@@ -17,6 +17,7 @@ import (
 const (
 	//SlackBotToken ...
 	SlackBotToken = "SLACK_BOT_TOKEN"
+	pluginName    = "slack-logs"
 	helpHeader    = `Usage: dokku slack-logs[:COMMAND]
 
 Read Dokku apps logs from Slack bot
@@ -24,8 +25,12 @@ Read Dokku apps logs from Slack bot
 Additional commands:`
 
 	helpContent = `
-	slack-logs:token <SLACK_BOT_TOKEN>, set Slack bot token
 	slack-logs:enable, connects to Slack bot
+
+	In the Slack bot app type:
+	logs <app-name> <type>
+	or just
+	logs <app-name>
 `
 )
 
@@ -35,18 +40,14 @@ func main() {
 
 	cmd := flag.Arg(0)
 	switch cmd {
-	case "slack-logs:enable":
+	case pluginName + ":help", pluginName:
+		usage()
+	case pluginName + ":enable":
 		readLog()
-	case "slack-logs:token":
-		setSlackToken(flag.Arg(1))
-	case "slack-logs:help":
-		usage()
-	case "slack-logs":
-		usage()
 	default:
 		dokkuNotImplementExitCode, err := strconv.Atoi(os.Getenv("DOKKU_NOT_IMPLEMENTED_EXIT"))
 		if err != nil {
-			fmt.Println("failed to retrieve DOKKU_NOT_IMPLEMENTED_EXIT environment variable")
+			fmt.Println("Command does not exist")
 			dokkuNotImplementExitCode = 10
 		}
 		os.Exit(dokkuNotImplementExitCode)
@@ -64,7 +65,7 @@ func usage() {
 }
 
 func readLog() {
-	log.Println("Read log running!")
+	log.Println("Slack logs running!")
 
 	slackBotToken := os.Getenv(SlackBotToken)
 	if slackBotToken == "" {
@@ -88,11 +89,13 @@ func readLog() {
 
 	logs := &slacker.CommandDefinition{
 		Description: "Read logs",
-		Example:     "logs app",
+		Example:     "logs appname",
 		Handler: func(request slacker.Request, response slacker.ResponseWriter) {
-			param := request.Param("app")
-			if param != "" {
-				fileName := fmt.Sprintf("/var/log/dokku/%s/web.00.log", param)
+			appParam := request.Param("app")
+			typeParam := request.StringParam("type", "web")
+
+			if appParam != "" {
+				fileName := fmt.Sprintf("/var/log/dokku/%s/%s.00.log", appParam, typeParam)
 				f, err := readFile(fileName)
 				if err != nil {
 					response.Reply(err.Error())
@@ -107,7 +110,7 @@ func readLog() {
 		},
 	}
 
-	bot.Command("logs <app>", logs)
+	bot.Command("logs <app> <type>", logs)
 
 	help := &slacker.CommandDefinition{
 		Description: "help!",
@@ -135,14 +138,4 @@ func readFile(fileName string) (chan *tail.Line, error) {
 		return nil, err
 	}
 	return t.Lines, nil
-}
-
-func setSlackToken(token string) {
-	err := os.Setenv(SlackBotToken, token)
-	if err != nil {
-		log.Println(err)
-	} else {
-		log.Println("Env var set:\n" + SlackBotToken + "=" + token)
-	}
-
 }

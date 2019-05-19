@@ -18,7 +18,6 @@ dokku plugin:install https://github.com/evzpav/dokku-slack-logs.git
 ## commands
 
 ```
-	slack-logs:token <SLACK_BOT_TOKEN>, set Slack bot token
 	slack-logs:enable, connects to Slack bot
 ```
 
@@ -28,14 +27,23 @@ dokku plugin:install https://github.com/evzpav/dokku-slack-logs.git
 # create an app on Slack and get the bot token
 
 # on Dokku machine run:
-# set the bot token:
-    dokku slack-logs:token <SLACK_BOT_TOKEN>
+
 # enable the bot:
+    dokku config:set --global SLACK_BOT_TOKEN=<SLACK_BOT_TOKEN>
     dokku slack-logs:enable
 
 # on Slack app:
-    logs dokku-app-name
-# it will print log on Slack bot
+    # Default type is web if not specified
+    logs <app-name> <type>
+
+    #Example 1:
+    logs myapp
+    # it will try to read log file from /var/log/dokku/myapp/web.00.log and print to Slack bot
+
+    #Example 2:
+    logs myapp worker
+    # it will try to read log file from /var/log/dokku/myapp/worker.00.log and print to Slack bot
+
 ```
 
 
