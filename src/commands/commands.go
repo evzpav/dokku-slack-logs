@@ -40,7 +40,7 @@ func main() {
 	case "slack-logs:help":
 		usage()
 	case "slack-logs":
-		fmt.Print(helpContent)
+		usage()
 	default:
 		dokkuNotImplementExitCode, err := strconv.Atoi(os.Getenv("DOKKU_NOT_IMPLEMENTED_EXIT"))
 		if err != nil {
